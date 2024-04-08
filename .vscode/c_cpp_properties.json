@@ -1,0 +1,33 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "~/gcc4mbed",
+                "~/ros/lib/ros_lib",
+                "/home/ubuntu/gcc4mbed/",
+                "/home/ubuntu/gcc4mbed/",
+                "/home/ubuntu/gcc4mbed/external/mbed-os",
+                "/home/ubuntu/gcc4mbed/gcc-arm-none-eabi/arm-none-eabi/include",
+                "/home/ubuntu/gcc4mbed/external/mbed-os/targets/TARGET_ARM_SSG/TARGET_BEETLE",
+                "/home/ubuntu/gcc4mbed/external/mbed-os/targets/TARGET_ARM_SSG/TARGET_BEETLE",
+                "/home/ubuntu/gcc4mbed/external/mbed-os/targets/TARGET_ARM_SSG/TARGET_BEETLE/device",
+                "/home/ubuntu/gcc4mbed/external/mbed-os/targets/TARGET_ARM_SSG/TARGET_BEETLE/device",
+                "/home/ubuntu/gcc4mbed/external/mbed-os/cmsis",
+                "/home/ubuntu/gcc4mbed/external/mbed-os/cmsis",
+                "/home/ubuntu/gcc4mbed/external/mbed-os/hal",
+                "/home/ubuntu/gcc4mbed/external/mbed-os/hal",
+                "/home/ubuntu/ros/lib/ros_lib/BufferedSerial",
+                "/home/ubuntu/ros/lib/ros_lib/BufferedSerial",
+                "/home/ubuntu/ros/lib/ros_lib/BufferedSerial/Buffer"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "c17",
+            "cppStandard": "gnu++14",
+            "intelliSenseMode": "linux-gcc-x64"
+        }
+    ],
+    "version": 4
+}
