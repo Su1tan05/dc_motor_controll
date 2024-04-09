@@ -23,7 +23,7 @@ class MotorController {
     MotorController(MotorDriver *driver, Encoder *encoder, Timer *workingTimer, PID *pid);
     ~MotorController();
 
-    void setPID(float Td, float K_p, float K_i, float K_d);
+    void stopMotor();
 
     void setAngle(float degree);
 };

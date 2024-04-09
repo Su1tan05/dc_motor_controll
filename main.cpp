@@ -22,23 +22,27 @@ float setpoint = 0;
 Timer workingTimer;
 
 PID pid_motor1(kp, ki, kd, td);
-Encoder enc_motor1(D7, D6, 667, 16, Encoder::X4_ENCODING);
-MotorDriver driver_motor1(D10, D11, D12);
+Encoder enc_motor1(D6, D7, 100, 16, Encoder::X4_ENCODING);
+MotorDriver driver_motor1(D3, D4, D5);
 MotorController contoller_motor1(&driver_motor1, &enc_motor1, &workingTimer, &pid_motor1);
 
 Ticker motor_info_ticker;
 ros::NodeHandle nh;
 geometry_msgs::Vector3 monitoring_msg;
 
-void pwmSub(const std_msgs::Float32 &pwm_msg);
+DigitalOut led(LED1);
+
+// void pwmSub(const std_msgs::Float32 &pwm_msg);
 void setAngle(const std_msgs::Float32 &angle_msg);
+void runMotor(const std_msgs::Empty &run_msg);
 void pidTuningsCb(const geometry_msgs::Vector3 &pid_tunings_msg);
 void stopMotor(const std_msgs::Empty &stop_msg);
 void getMotorInfo(void);
 void initRosTopics(void);
 
-ros::Subscriber<std_msgs::Float32> motor_pwm_sub("motor_pwm", &pwmSub);
+// ros::Subscriber<std_msgs::Float32> motor_pwm_sub("motor_pwm", &pwmSub);
 ros::Subscriber<std_msgs::Empty> stop_motor_sub("stop_motor", &stopMotor);
+ros::Subscriber<std_msgs::Empty> run_motor_sub("run_motor", &runMotor);
 ros::Subscriber<std_msgs::Float32> set_angle_sub("set_angle", &setAngle);
 ros::Subscriber<geometry_msgs::Vector3> pid_tunings_sub("pid_tunings", &pidTuningsCb);
 
@@ -52,24 +56,31 @@ int main()
     while (1)
     {
         nh.spinOnce();
+        wait_ms(1);
     }
 }
 
 void initRosTopics()
 {
     nh.advertise(monitoring_pub);
-    nh.subscribe(motor_pwm_sub);
+    // nh.subscribe(motor_pwm_sub);
     nh.subscribe(stop_motor_sub);
     nh.subscribe(set_angle_sub);
     nh.subscribe(pid_tunings_sub);
+    nh.subscribe(run_motor_sub);
 }
 
-void pwmSub(const std_msgs::Float32 &pwm_msg) {
+// void pwmSub(const std_msgs::Float32 &pwm_msg) {
 
+// }
+
+void runMotor(const std_msgs::Empty &run_msg) {
+    led = !led;
+    driver_motor1.directRevolute(0.6);
 }
 
 void stopMotor(const std_msgs::Empty &stop_msg) {
-
+    contoller_motor1.stopMotor();
 }
 
 void setAngle(const std_msgs::Float32 &angle_msg) {

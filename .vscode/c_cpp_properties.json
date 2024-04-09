@@ -9,6 +9,7 @@
                 "/home/ubuntu/gcc4mbed/",
                 "/home/ubuntu/gcc4mbed/",
                 "/home/ubuntu/gcc4mbed/external/mbed-os",
+                "/home/ubuntu/gcc4mbed/external/mbed-os/drivers",
                 "/home/ubuntu/gcc4mbed/gcc-arm-none-eabi/arm-none-eabi/include",
                 "/home/ubuntu/gcc4mbed/external/mbed-os/targets/TARGET_ARM_SSG/TARGET_BEETLE",
                 "/home/ubuntu/gcc4mbed/external/mbed-os/targets/TARGET_ARM_SSG/TARGET_BEETLE",

@@ -16,6 +16,10 @@ MotorController::~MotorController() {
     delete m_pid;
 }
 
+void MotorController::stopMotor() {
+    m_driver->revolute(0);
+}
+
 void MotorController::setAngle(float desiredAngle) {
 
     float Td_current = 0.0;
