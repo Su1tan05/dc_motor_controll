@@ -5,7 +5,7 @@ hostName="ubuntu"
 
 filePathWindows="./NUCLEO_F411RE/"
 folderPathLinux="~/stm_binary"
-fileName="dc_motor_controll.bin"
+fileName="dc_motor_controll_new.bin"
 
 scp -i ~/.ssh/test "${filePathWindows}${fileName}" "${hostName}@${ip}:${folderPathLinux}"
 
