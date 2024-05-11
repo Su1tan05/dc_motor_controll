@@ -33,6 +33,7 @@ class Encoder{
     int getEncTicks(); // получение тиков энкодера
     bool getCurDirection(); // получение текущего направления вращения
     float getCurAngle(); // получение текущего угла
+    float getCurAngleRad(); // получение текущего угла в радианах
     float getCurSpeed(); // получение текущей скорости
     void reset(); // сброс энкодера
 

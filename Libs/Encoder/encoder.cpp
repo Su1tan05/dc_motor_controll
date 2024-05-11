@@ -90,6 +90,13 @@ float Encoder::getCurAngle(){
 
 }
 
+float Encoder::getCurAngleRad(){
+
+    float curAngleRad;
+    curAngleRad = m_encTicks * (float)2 * 3.14159265359 / (m_reductioRatio * m_encImpulseRotate * m_pulseRepeats);
+    return curAngleRad;
+}
+
 float Encoder::getCurSpeed(){
     float curSpeed = 12.0;
     return curSpeed;

@@ -1,7 +1,7 @@
 #include "mbed.h"
 #include "DcServo.h"
 
-#define PID_RATE 0.01
+#define PID_RATE 0.001
 
 DcServo::DcServo(PinName IN1, PinName IN2, PinName EN, Encoder* encoder) : _IN1(IN1), _IN2(IN2), _EN(EN), _encoder{encoder}, pid(1, 0, 0, PID_RATE) {
     setpoint = 0;
@@ -79,7 +79,7 @@ void DcServo::setAngle(float angle){
     setpoint = angle;
 }
 
-void DcServo:: revoluteMotor(){
+void DcServo::revoluteMotor(){
     pid.setProcessValue(setpoint - getAngle());
     revolute(pid.compute());
 }

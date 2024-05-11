@@ -1,6 +1,7 @@
 #include "mbed.h"
 #include "encoder.h"
 #include "PID.h"
+#include "LowpassFilter.h"
 
 class DcServo{
 
@@ -10,6 +11,7 @@ class DcServo{
     PwmOut _EN;
     Encoder* _encoder;
     PID pid;
+    LowpassFilter lowpassFilter;
     Ticker pid_ticker;
     bool attached;
     float current_angle;
