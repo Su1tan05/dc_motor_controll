@@ -7,7 +7,7 @@ filePathWindows="./NUCLEO_F411RE/"
 folderPathLinux="~/stm_binary"
 fileName="dc_motor_controll_new.bin"
 
-scp -i ~/.ssh/test "${filePathWindows}${fileName}" "${hostName}@${ip}:${folderPathLinux}"
+scp -i ~/.ssh/raspberry "${filePathWindows}${fileName}" "${hostName}@${ip}:${folderPathLinux}"
 
 command="st-flash write ${folderPathLinux}/${fileName} 0x8000000"
 

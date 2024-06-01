@@ -1,7 +1,7 @@
 #include "mbed.h"
 #include "DcServo.h"
 
-#define PID_RATE 0.001
+#define PID_RATE 0.00005
 
 DcServo::DcServo(PinName IN1, PinName IN2, PinName EN, Encoder* encoder) : _IN1(IN1), _IN2(IN2), _EN(EN), _encoder{encoder}, pid(1, 0, 0, PID_RATE) {
     setpoint = 0;

@@ -43,12 +43,14 @@ void setMotor3PID(const geometry_msgs::Vector3 &pid_tunings_msg);
 void stopMotor1(const std_msgs::Empty &stop_msg);
 void stopMotor2(const std_msgs::Empty &stop_msg);
 void stopMotor3(const std_msgs::Empty &stop_msg);
+void resetAll(const std_msgs::Empty &stop_msg);
 void getMotorInfo(void);
 void initRosTopics(void);
 
 ros::Subscriber<std_msgs::Empty> stop_motor1_sub("stop_motor1", &stopMotor1);
 ros::Subscriber<std_msgs::Empty> stop_motor2_sub("stop_motor2", &stopMotor2);
 ros::Subscriber<std_msgs::Empty> stop_motor3_sub("stop_motor3", &stopMotor3);
+ros::Subscriber<std_msgs::Empty> reset_all_sub("reset_all", &resetAll);
 
 ros::Subscriber<std_msgs::Float32> set_angle_motor1_sub("set_angle_motor1", &setAngleMotor1);
 ros::Subscriber<std_msgs::Float32> set_angle_motor2_sub("set_angle_motor2", &setAngleMotor2);
@@ -86,9 +88,22 @@ void initRosTopics()
     nh.subscribe(set_angle_motor2_sub);
     nh.subscribe(set_angle_motor3_sub);
     
+    nh.subscribe(reset_all_sub);
+
     nh.subscribe(set_pid_motor1_sub);
     nh.subscribe(set_pid_motor2_sub);
     nh.subscribe(set_pid_motor3_sub);
+}
+
+void resetAll(const std_msgs::Empty &stop_msg) {
+    motor1_setpoint = 0;
+    motor1_driver.stop();
+    motor2_setpoint = 0;
+    motor2_driver.stop();
+    motor3_setpoint = 0;
+    motor3_driver.stop();
+
+    timer.reset();
 }
 
 void pwmSub(const std_msgs::Float32 &pwm_msg)
@@ -158,7 +173,7 @@ void getMotorInfo(){
     monitoring_msg.data[7] = motor3_driver.getAngle();
     monitoring_msg.data[8] = motor3_driver.getPWM();
 
-    if (timer.read() > 30)
+    if (timer.read() > 500)
     {
         timer.reset();
     }
