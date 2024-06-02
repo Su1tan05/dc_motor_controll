@@ -168,10 +168,13 @@ DigitalOut _IN2 = PB_8;
 PwmOut _EN = D3;
 
 void startCalculation(const std_msgs::Empty &stop_msg) {
+    t = 0;
+    dt = 0;
+    t1 = 0;
+    timer.reset();
     _IN1.write(1);
     _IN2.write(0);
     _EN.write(1);
-    timer.reset();
 }
 
 void stopCalculation(const std_msgs::Empty &stop_msg) {
@@ -179,7 +182,7 @@ void stopCalculation(const std_msgs::Empty &stop_msg) {
     _IN1.write(0);
     _IN2.write(0);
     _EN.write(0);
-    timer.stop();
+    timer.reset();
 }
 
 void getMotorInfo(){    
