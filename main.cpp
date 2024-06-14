@@ -1,104 +1,183 @@
 #include "mbed.h"
+#include "encoder.h"
+#include "DcServo.h"
 
 #include <ros.h>
 #include <std_msgs/Empty.h>
 #include <std_msgs/Float32.h>
 #include <std_msgs/UInt16.h>
 #include <std_msgs/Int32.h>
+#include <std_msgs/Float32MultiArray.h>
 #include <geometry_msgs/Vector3.h>  
-#include "Encoder.h"
-#include "MotorDriver.h"
-#include "MotorController.h"
-#include "PID.h"
 
+#include "config.h"
 #define PUB_RATE 0.1
 
-float kp = 5;
-float ki = 0.5;
-float kd = 0;
-float td = 0.3;
-float setpoint = 0;
-
-Timer workingTimer;
-
-PID pid_motor1(kp, ki, kd, td);
-Encoder enc_motor1(D6, D7, 100, 16, Encoder::X4_ENCODING);
-MotorDriver driver_motor1(D3, D4, D5);
-MotorController contoller_motor1(&driver_motor1, &enc_motor1, &workingTimer, &pid_motor1);
+float motor1_setpoint = 0;
+float motor2_setpoint = 0;
+float motor3_setpoint = 0;
 
 Ticker motor_info_ticker;
+Timer timer;
+
+Encoder motor1_encoder(PA_12, PC_8, REDUCTER_RATIO, ENCODER_IMPULSES, true);
+DcServo motor1_driver{PC_9, PB_8, D3, &motor1_encoder};
+
+Encoder motor2_encoder{D13, D14, REDUCTER_RATIO, ENCODER_IMPULSES, true};
+DcServo motor2_driver{D7, D8, D5, &motor2_encoder};
+
+Encoder motor3_encoder{D9, D10, REDUCTER_RATIO, ENCODER_IMPULSES, true};
+DcServo motor3_driver{D4, D2, D6, &motor3_encoder};
+
 ros::NodeHandle nh;
-geometry_msgs::Vector3 monitoring_msg;
+std_msgs::Float32MultiArray monitoring_msg;
 
-DigitalOut led(LED1);
+void pwmSub(const std_msgs::Float32 &pwm_msg);
+void setAngleMotor1(const std_msgs::Float32 &angle_msg);
+void setAngleMotor2(const std_msgs::Float32 &angle_msg);
+void setAngleMotor3(const std_msgs::Float32 &angle_msg);
+void setMotor1PID(const geometry_msgs::Vector3 &pid_tunings_msg);
+void setMotor2PID(const geometry_msgs::Vector3 &pid_tunings_msg);
+void setMotor3PID(const geometry_msgs::Vector3 &pid_tunings_msg);
 
-// void pwmSub(const std_msgs::Float32 &pwm_msg);
-void setAngle(const std_msgs::Float32 &angle_msg);
-void runMotor(const std_msgs::Empty &run_msg);
-void pidTuningsCb(const geometry_msgs::Vector3 &pid_tunings_msg);
-void stopMotor(const std_msgs::Empty &stop_msg);
+void stopMotor1(const std_msgs::Empty &stop_msg);
+void stopMotor2(const std_msgs::Empty &stop_msg);
+void stopMotor3(const std_msgs::Empty &stop_msg);
+void resetAll(const std_msgs::Empty &stop_msg);
 void getMotorInfo(void);
 void initRosTopics(void);
 
-// ros::Subscriber<std_msgs::Float32> motor_pwm_sub("motor_pwm", &pwmSub);
-ros::Subscriber<std_msgs::Empty> stop_motor_sub("stop_motor", &stopMotor);
-ros::Subscriber<std_msgs::Empty> run_motor_sub("run_motor", &runMotor);
-ros::Subscriber<std_msgs::Float32> set_angle_sub("set_angle", &setAngle);
-ros::Subscriber<geometry_msgs::Vector3> pid_tunings_sub("pid_tunings", &pidTuningsCb);
+ros::Subscriber<std_msgs::Empty> stop_motor1_sub("stop_motor1", &stopMotor1);
+ros::Subscriber<std_msgs::Empty> stop_motor2_sub("stop_motor2", &stopMotor2);
+ros::Subscriber<std_msgs::Empty> stop_motor3_sub("stop_motor3", &stopMotor3);
+ros::Subscriber<std_msgs::Empty> reset_all_sub("reset_all", &resetAll);
 
-ros::Publisher monitoring_pub("monitoring", &monitoring_msg);
+ros::Subscriber<std_msgs::Float32> set_angle_motor1_sub("set_angle_motor1", &setAngleMotor1);
+ros::Subscriber<std_msgs::Float32> set_angle_motor2_sub("set_angle_motor2", &setAngleMotor2);
+ros::Subscriber<std_msgs::Float32> set_angle_motor3_sub("set_angle_motor3", &setAngleMotor3);
+
+ros::Subscriber<geometry_msgs::Vector3> set_pid_motor1_sub("set_PID_motor1", &setMotor1PID);
+ros::Subscriber<geometry_msgs::Vector3> set_pid_motor2_sub("set_PID_motor2", &setMotor2PID);
+ros::Subscriber<geometry_msgs::Vector3> set_pid_motor3_sub("set_PID_motor3", &setMotor3PID);
+
+ros::Publisher motor_monitoring_pub("monitoring", &monitoring_msg);
 
 int main()
 {
+    monitoring_msg.data_length = 10;
+    monitoring_msg.data = (float *)malloc(sizeof(float)*monitoring_msg.data_length);
     nh.initNode();
     initRosTopics();
+    timer.start();
     motor_info_ticker.attach(getMotorInfo, PUB_RATE);
     while (1)
     {
         nh.spinOnce();
-        wait_ms(1);
     }
 }
 
 void initRosTopics()
 {
-    nh.advertise(monitoring_pub);
-    // nh.subscribe(motor_pwm_sub);
-    nh.subscribe(stop_motor_sub);
-    nh.subscribe(set_angle_sub);
-    nh.subscribe(pid_tunings_sub);
-    nh.subscribe(run_motor_sub);
-}
+    nh.advertise(motor_monitoring_pub);
 
-// void pwmSub(const std_msgs::Float32 &pwm_msg) {
+    nh.subscribe(stop_motor1_sub);
+    nh.subscribe(stop_motor2_sub);
+    nh.subscribe(stop_motor3_sub);
 
-// }
-
-void runMotor(const std_msgs::Empty &run_msg) {
-    led = !led;
-    driver_motor1.directRevolute(0.6);
-}
-
-void stopMotor(const std_msgs::Empty &stop_msg) {
-    contoller_motor1.stopMotor();
-}
-
-void setAngle(const std_msgs::Float32 &angle_msg) {
-    setpoint = angle_msg.data;
-    contoller_motor1.setAngle(setpoint);
-}
-
-void pidTuningsCb(const geometry_msgs::Vector3 &pid_tunings_msg) {
-    kp = pid_tunings_msg.x;
-    ki = pid_tunings_msg.y;
-    kd = pid_tunings_msg.z;
+    nh.subscribe(set_angle_motor1_sub);
+    nh.subscribe(set_angle_motor2_sub);
+    nh.subscribe(set_angle_motor3_sub);
     
-    pid_motor1.setPID(kp, ki, kd, td);
+    nh.subscribe(reset_all_sub);
+
+    nh.subscribe(set_pid_motor1_sub);
+    nh.subscribe(set_pid_motor2_sub);
+    nh.subscribe(set_pid_motor3_sub);
 }
 
-void getMotorInfo() {
-    monitoring_msg.x = setpoint;
-    monitoring_msg.y = enc_motor1.getPulses();
-    monitoring_msg.z = enc_motor1.getCurrentAngle();
-    monitoring_pub.publish(&monitoring_msg);
+void resetAll(const std_msgs::Empty &stop_msg) {
+    motor1_setpoint = 0;
+    motor1_driver.stop();
+    motor2_setpoint = 0;
+    motor2_driver.stop();
+    motor3_setpoint = 0;
+    motor3_driver.stop();
+
+    timer.reset();
+}
+
+void pwmSub(const std_msgs::Float32 &pwm_msg)
+{
+    motor1_driver.revolute(pwm_msg.data);
+}
+
+void stopMotor1(const std_msgs::Empty &stop_msg)
+{
+    motor1_setpoint = 0;
+    motor1_driver.stop();
+}
+
+void stopMotor2(const std_msgs::Empty &stop_msg)
+{
+    motor2_setpoint = 0;
+    motor2_driver.stop();
+}
+
+void stopMotor3(const std_msgs::Empty &stop_msg)
+{
+    motor3_setpoint = 0;
+    motor3_driver.stop();
+}
+
+void setAngleMotor1(const std_msgs::Float32 &angle_msg){
+    motor1_setpoint = angle_msg.data;
+    motor1_driver.setAngle(motor1_setpoint);
+}
+
+void setAngleMotor2(const std_msgs::Float32 &angle_msg){
+    motor2_setpoint = angle_msg.data;
+    motor2_driver.setAngle(motor2_setpoint);
+}
+
+void setAngleMotor3(const std_msgs::Float32 &angle_msg){
+    motor3_setpoint = angle_msg.data;
+    motor3_driver.setAngle(motor3_setpoint);
+}
+
+void setMotor1PID(const geometry_msgs::Vector3 &pid_tunings_msg)
+{
+    motor1_driver.setPid(pid_tunings_msg.x, pid_tunings_msg.y, pid_tunings_msg.z);
+}
+
+void setMotor2PID(const geometry_msgs::Vector3 &pid_tunings_msg)
+{
+    motor2_driver.setPid(pid_tunings_msg.x, pid_tunings_msg.y, pid_tunings_msg.z);
+}
+
+void setMotor3PID(const geometry_msgs::Vector3 &pid_tunings_msg)
+{
+    motor3_driver.setPid(pid_tunings_msg.x, pid_tunings_msg.y, pid_tunings_msg.z);
+}
+
+void getMotorInfo(){
+
+    monitoring_msg.data[0] = motor1_setpoint;
+    monitoring_msg.data[1] = motor1_driver.getAngle();
+    monitoring_msg.data[2] = motor1_driver.getPWM();
+    
+    monitoring_msg.data[3] = motor2_setpoint;
+    monitoring_msg.data[4] = motor2_driver.getAngle();
+    monitoring_msg.data[5] = motor2_driver.getPWM();
+
+    monitoring_msg.data[6] = motor3_setpoint;
+    monitoring_msg.data[7] = motor3_driver.getAngle();
+    monitoring_msg.data[8] = motor3_driver.getPWM();
+
+    if (timer.read() > 500)
+    {
+        timer.reset();
+    }
+    
+    monitoring_msg.data[9] = timer.read();
+    motor_monitoring_pub.publish(&monitoring_msg);
 }

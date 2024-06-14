@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "*.feature": "feature",
+        "system_error": "cpp"
+    }
+}
